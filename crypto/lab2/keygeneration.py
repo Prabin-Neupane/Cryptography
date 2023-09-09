@@ -16,11 +16,7 @@ compression = [
     44, 49, 39, 56, 34, 53,
     46, 42, 50, 36, 29, 32
 ]
-# def generateInput():
-#     input_block = ""
-#     for _ in range(64):
-#         input_block += str(r.randint(0,1))
-#     return input_block
+
 round=1
 def des(data,paritydrop,compress,round):
     result=""
