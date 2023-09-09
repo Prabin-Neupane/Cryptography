@@ -17,14 +17,14 @@ if(option==1):
         cipher=cipher+chr((i+key)%26+97)
     print(cipher)
 elif(option==2):
-    cipher=str(input("enter message:"))
+    cipher=str(input("enter cipher text:"))
     for i in cipher:
         if(ord(i)<96):
             num_code.append(ord(i)-65)
         else:
             num_code.append(ord(i)-97)
     key=int(input("ener a key:"))
-    print("cipher text is:")
+    print("orginal message is:")
     for i in num_code:
         if(i==-33):
             continue
