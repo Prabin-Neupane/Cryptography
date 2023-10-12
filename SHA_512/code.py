@@ -1,5 +1,5 @@
 # Additive Constants
-K = [
+my_constants = [
     0x428A2F98D728AE22, 0x7137449123EF65CD, 0xB5C0FBCFEC4D3B2F, 0xE9B5DBA58189DBBC,
     0x3956C25BF348B538, 0x59F111F1B605D019, 0x923F82A4AF194F9B, 0xAB1C5ED5DA6D8118,
     0xD807AA98A3030242, 0x12835B0145706FBE, 0x243185BE4EE4B28C, 0x550C7DC3D5FFB4E2,
@@ -23,46 +23,37 @@ K = [
 ]
 
 # Initial Hash Values
-HASH_VALUE = [
+my_hash_values = [
     0x6A09E667F3BCC908, 0xBB67AE8584CAA73B, 0x3C6EF372FE94F82B, 0xA54FF53A5F1D36F1,
     0x510E527FADE682D1, 0x9B05688C2B3E6C1F, 0x1F83D9ABFB41BD6B, 0x5BE0CD19137E2179,
 ]
 
-
-# SHA-512 Functions
-def Ch(e, f, g):
-    return (e & f) ^ (~e & g)
-
-
-def Maj(a, b, c):
-    return (a & b) ^ (a & c) ^ (b & c)
-
-
-def rotr(x, n):
+def my_rotr(x, n):
     return (x >> n) | (x << (64 - n))
 
+def my_Maj(a, b, c):
+    return (a & b) ^ (a & c) ^ (b & c)
 
-def summation_a(a):
-    return rotr(a, 28) ^ rotr(a, 34) ^ rotr(a, 39)
+def my_Ch(e, f, g):
+    return (e & f) ^ (~e & g)
+
+def my_sigma_0(word):
+    return my_rotr(word, 1) ^ my_rotr(word, 8) ^ (word >> 7)
+
+def my_sigma_1(word):
+    return my_rotr(word, 19) ^ my_rotr(word, 61) ^ (word >> 6)
+
+def my_summation_a(a):
+    return my_rotr(a, 28) ^ my_rotr(a, 34) ^ my_rotr(a, 39)
+
+def my_summation_e(e):
+    return my_rotr(e, 14) ^ my_rotr(e, 18) ^ my_rotr(e, 41)
 
 
-def summation_e(e):
-    return rotr(e, 14) ^ rotr(e, 18) ^ rotr(e, 41)
-
-
-def sigma_0(word):
-    return rotr(word, 1) ^ rotr(word, 8) ^ (word >> 7)
-
-
-def sigma_1(word):
-    return rotr(word, 19) ^ rotr(word, 61) ^ (word >> 6)
-
-
-def addition_modulo_2_64(value):
+def my_addition_modulo_2_64(value):
     return value % (2**64)
 
-
-def pad_message(message):
+def my_pad_message(message):
     message += b"\x80"  # Adding 1 byte (10000000)
 
     while len(message) % 128 != 112:
@@ -71,63 +62,59 @@ def pad_message(message):
     message += (len(message) * 8).to_bytes(16, "big")
 
     return message
-
-
-def divide_to_blocks(message):
+def my_divide_to_blocks(message):
     blocks = []
     for i in range(0, len(message), 128):
         blocks.append(message[i : i + 128])
 
     return blocks
 
+my_W = [0] * 80
 
-W = [0] * 80
-
-
-# SHA-512 Compression Function
-def compression_function(message):
+# My SHA-512 Compression Function
+def my_compression_function(message):
     
-    a, b, c, d, e, f, g, h = HASH_VALUE
+    a, b, c, d, e, f, g, h = my_hash_values
 
     for t in range(16):
-        W[t] = int.from_bytes(message[t * 8 : (t + 1) * 8], byteorder="big")
+        my_W[t] = int.from_bytes(message[t * 8 : (t + 1) * 8], byteorder="big")
 
     for t in range(16, 80):
-        W[t] = sigma_1(W[t - 2] + W[t - 7]) + sigma_0(W[t - 15] + W[t - 16])
+        my_W[t] = my_sigma_1(my_W[t - 2] + my_W[t - 7]) + my_sigma_0(my_W[t - 15] + my_W[t - 16])
 
     # Compression Loop
     for t in range(80):
-        T1 = h + (Ch(e, f, g) + summation_e(e) + K[t] + W[t])
-        T2 = summation_a(a) + Maj(a, b, c)
+        T1 = h + (my_Ch(e, f, g) + my_summation_e(e) + my_constants[t] + my_W[t])
+        T2 = my_summation_a(a) + my_Maj(a, b, c)
 
         h = g
         g = f
         f = e
-        e = addition_modulo_2_64(d + T1)
+        e = my_addition_modulo_2_64(d + T1)
         d = c
         c = b
         b = a
-        a = addition_modulo_2_64(T1 + T2)
+        a = my_addition_modulo_2_64(T1 + T2)
 
-    #intermediate Hash values
-    HASH_VALUE[0] = addition_modulo_2_64(HASH_VALUE[0] + a)
-    HASH_VALUE[1] = addition_modulo_2_64(HASH_VALUE[1] + b)
-    HASH_VALUE[2] = addition_modulo_2_64(HASH_VALUE[2] + c)
-    HASH_VALUE[3] = addition_modulo_2_64(HASH_VALUE[3] + d)
-    HASH_VALUE[4] = addition_modulo_2_64(HASH_VALUE[4] + e)
-    HASH_VALUE[5] = addition_modulo_2_64(HASH_VALUE[5] + f)
-    HASH_VALUE[6] = addition_modulo_2_64(HASH_VALUE[6] + g)
-    HASH_VALUE[7] = addition_modulo_2_64(HASH_VALUE[7] + h)
-
+    # Intermediate Hash values
+    my_hash_values[0] = my_addition_modulo_2_64(my_hash_values[0] + a)
+    my_hash_values[1] = my_addition_modulo_2_64(my_hash_values[1] + b)
+    my_hash_values[2] = my_addition_modulo_2_64(my_hash_values[2] + c)
+    my_hash_values[3] = my_addition_modulo_2_64(my_hash_values[3] + d)
+    my_hash_values[4] = my_addition_modulo_2_64(my_hash_values[4] + e)
+    my_hash_values[5] = my_addition_modulo_2_64(my_hash_values[5] + f)
+    my_hash_values[6] = my_addition_modulo_2_64(my_hash_values[6] + g)
+    my_hash_values[7] = my_addition_modulo_2_64(my_hash_values[7] + h)
 
 message = input("Enter a message: ").encode("utf-8")
 
-padded_message = pad_message(message)
+padded_message = my_pad_message(message)
 
-blocks = divide_to_blocks(padded_message)
+blocks = my_divide_to_blocks(padded_message)
 
 for block in blocks:
-    compression_function(block)
+    my_compression_function(block)
 
-final_hash = "".join(format(h, "016x") for h in HASH_VALUE)
+final_hash = "".join(format(h, "016x") for h in my_hash_values)
 print(final_hash)
+
